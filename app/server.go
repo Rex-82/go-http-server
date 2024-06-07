@@ -5,6 +5,7 @@ import (
 	"net"
 	"os"
 	"strings"
+	"unicode/utf8"
 )
 
 func main() {
@@ -48,6 +49,18 @@ func main() {
 	if path == "/" {
 		conn.Write([]byte("HTTP/1.1 200 OK\r\n\r\n"))
 	} else {
-		conn.Write([]byte("HTTP/1.1 404 Not Found\r\n\r\n"))
+
+		endpoint := strings.Split(path, "/")
+
+		if endpoint[1] == "echo" {
+
+			content := "HTTP/1.1 200 OK\r\n" + "Content-Type: text\r\n" + "Content-Length: " + fmt.Sprintf("%d", utf8.RuneCountInString(endpoint[2])) + "\r\n\r\n" + endpoint[2]
+
+			fmt.Println(content)
+
+			conn.Write([]byte(content))
+		} else {
+			conn.Write([]byte("HTTP/1.1 404 Not Found\r\n\r\n"))
+		}
 	}
 }
