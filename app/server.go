@@ -54,7 +54,7 @@ func main() {
 
 		if endpoint[1] == "echo" {
 
-			content := "HTTP/1.1 200 OK\r\n" + "Content-Type: text\r\n" + "Content-Length: " + fmt.Sprintf("%d", utf8.RuneCountInString(endpoint[2])) + "\r\n\r\n" + endpoint[2]
+			content := "HTTP/1.1 200 OK\r\n" + "Content-Type: text/plain\r\n" + "Content-Length: " + fmt.Sprintf("%d", utf8.RuneCountInString(endpoint[2])) + "\r\n\r\n" + endpoint[2]
 
 			fmt.Println(content)
 
