@@ -68,6 +68,7 @@ func main() {
 			conn.Write([]byte(content))
 
 		case "user-agent":
+
 			content := "HTTP/1.1 200 OK" +
 				"\r\n" +
 				"Content-Type: text/plain\r\n" +
