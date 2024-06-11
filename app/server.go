@@ -43,10 +43,9 @@ func main() {
 	lines := strings.Split(req, "\r\n\r\n")
 
 	// Split the first part to get the path
-	path := strings.Split(lines[0], " ")[1]
+	splitLine := strings.Split(lines[0], " ")
+	path := splitLine[1]
 	// fmt.Println(path)
-
-	userAgent := strings.Split(lines[0], " ")[5]
 
 	if path == "/" {
 		conn.Write([]byte("HTTP/1.1 200 OK\r\n\r\n"))
@@ -68,6 +67,9 @@ func main() {
 			conn.Write([]byte(content))
 
 		case "user-agent":
+			userAgent := splitLine[4]
+
+			fmt.Println(lines)
 
 			content := "HTTP/1.1 200 OK" +
 				"\r\n" +
