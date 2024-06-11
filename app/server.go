@@ -46,20 +46,38 @@ func main() {
 	path := strings.Split(lines[0], " ")[1]
 	// fmt.Println(path)
 
+	userAgent := strings.Split(lines[0], " ")[5]
+
 	if path == "/" {
 		conn.Write([]byte("HTTP/1.1 200 OK\r\n\r\n"))
 	} else {
 
 		endpoint := strings.Split(path, "/")
 
-		if endpoint[1] == "echo" {
+		switch endpoint[1] {
+		case "echo":
+			content := "HTTP/1.1 200 OK" +
+				"\r\n" +
+				"Content-Type: text/plain\r\n" +
+				"Content-Length: " + fmt.Sprintf("%d\r\n", utf8.RuneCountInString(endpoint[2])) +
+				"\r\n" +
+				endpoint[2]
 
-			content := "HTTP/1.1 200 OK\r\n" + "Content-Type: text/plain\r\n" + "Content-Length: " + fmt.Sprintf("%d", utf8.RuneCountInString(endpoint[2])) + "\r\n\r\n" + endpoint[2]
-
-			fmt.Println(content)
+			// fmt.Println(content)
 
 			conn.Write([]byte(content))
-		} else {
+
+		case "user-agent":
+			content := "HTTP/1.1 200 OK" +
+				"\r\n" +
+				"Content-Type: text/plain\r\n" +
+				"Content-Length: " + fmt.Sprintf("%d\r\n", utf8.RuneCountInString(userAgent)) +
+				"\r\n" +
+				userAgent
+
+			conn.Write([]byte(content))
+
+		default:
 			conn.Write([]byte("HTTP/1.1 404 Not Found\r\n\r\n"))
 		}
 	}
