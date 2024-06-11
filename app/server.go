@@ -18,19 +18,31 @@ func main() {
 		os.Exit(1)
 	}
 
-	// Defer connection closing before exiting
-	defer l.Close()
+	// Infinite "while" loop to handle multiple connections
+	for {
 
-	// Accept incoming connection requests
-	conn, err := l.Accept()
-	if err != nil {
-		fmt.Println("Error accepting connection: ", err.Error())
-		os.Exit(1)
+		fmt.Println("waiting for connection...")
+		// Accept incoming connection requests
+		conn, err := l.Accept()
+		if err != nil {
+			fmt.Println("Error accepting connection: ", err.Error())
+			os.Exit(1)
+		}
+
+		// Create new goroutine to handle connections concurrently
+		go handleConnection(conn)
 	}
+
+}
+
+// Handles each connection individually
+func handleConnection(conn net.Conn) {
+	// Defer connection closing before exiting
+	defer conn.Close()
 
 	// Set up buffer size and read incoming data
 	buf := make([]byte, 1024)
-	_, err = conn.Read(buf)
+	_, err := conn.Read(buf)
 	if err != nil {
 		fmt.Println("Error reading connection", err.Error())
 		os.Exit(1)
