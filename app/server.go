@@ -92,6 +92,37 @@ func handleConnection(conn net.Conn) {
 
 			conn.Write([]byte(content))
 
+		case "files":
+
+			filePath := "/tmp/data/codecrafters.io/http-server-tester/" + endpoint[2]
+
+			fileInfo, err := os.Stat(filePath)
+			if err != nil {
+				fmt.Println(err)
+				conn.Write([]byte("HTTP/1.1 404 Not Found\r\n\r\n"))
+			} else {
+
+				fileSize := fileInfo.Size()
+
+				fileContent, err := os.ReadFile(filePath)
+				if err != nil {
+					fmt.Println(err)
+					os.Exit(1)
+				}
+
+				fmt.Println(string(fileContent))
+
+				content := "HTTP/1.1 200 OK" +
+					"\r\n" +
+					"Content-Type: application/octet-stream" +
+					"\r\n" +
+					"Content-Length: " + fmt.Sprintf("%d\r\n", fileSize) +
+					"\r\n" +
+					string(fileContent)
+
+				conn.Write([]byte(content))
+			}
+
 		default:
 			conn.Write([]byte("HTTP/1.1 404 Not Found\r\n\r\n"))
 		}
