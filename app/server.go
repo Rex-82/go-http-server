@@ -57,6 +57,8 @@ func handleConnection(conn net.Conn) {
 	// Split the first part to get the path
 	splitLine := strings.Split(lines[0], " ")
 	path := splitLine[1]
+	method := splitLine[0]
+	// fmt.Println("splitline[0]: ", splitLine[0])
 	// fmt.Println(path)
 
 	if path == "/" {
@@ -94,12 +96,43 @@ func handleConnection(conn net.Conn) {
 
 		case "files":
 
-			filePath := "/tmp/data/codecrafters.io/http-server-tester/" + endpoint[2]
+			dirPath := "/tmp/data/codecrafters.io/http-server-tester/"
+			filePath := dirPath + endpoint[2]
 
 			fileInfo, err := os.Stat(filePath)
 			if err != nil {
-				fmt.Println(err)
-				conn.Write([]byte("HTTP/1.1 404 Not Found\r\n\r\n"))
+
+				if method == "POST" {
+
+					// Create the directory structure if it doesn't exist
+					if err := os.MkdirAll(dirPath, 0755); err != nil {
+						fmt.Println("Error creating directory:", err)
+						conn.Write([]byte("HTTP/1.1 500 Internal Server Error"))
+						os.Exit(1)
+					}
+
+					// Now, create the file
+					_, err := os.Create(filePath)
+					if err != nil {
+						fmt.Println("Creation error:", err)
+						conn.Write([]byte("HTTP/1.1 500 Internal Server Error"))
+						os.Exit(1)
+					}
+
+					body := strings.Trim(lines[1], "\x00")
+
+					err = os.WriteFile(filePath, []byte(body), 0664)
+					if err != nil {
+						fmt.Println("Write error:", err)
+						conn.Write([]byte("HTTP/1.1 500 Internal Server Error"))
+						os.Exit(1)
+					}
+
+					conn.Write([]byte("HTTP/1.1 201 Created\r\n\r\n"))
+				} else {
+					conn.Write([]byte("HTTP/1.1 404 Not Found\r\n\r\n"))
+				}
+
 			} else {
 
 				fileSize := fileInfo.Size()
