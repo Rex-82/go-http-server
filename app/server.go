@@ -54,12 +54,10 @@ func handleConnection(conn net.Conn) {
 	// Split the request in parts using the defined separator
 	lines := strings.Split(req, "\r\n\r\n")
 
-	// Split the first part to get the path
+	// Split the first part to get path and method
 	splitLine := strings.Split(lines[0], " ")
 	path := splitLine[1]
 	method := splitLine[0]
-	// fmt.Println("splitline[0]: ", splitLine[0])
-	// fmt.Println(path)
 
 	if path == "/" {
 		conn.Write([]byte("HTTP/1.1 200 OK\r\n\r\n"))
@@ -68,7 +66,7 @@ func handleConnection(conn net.Conn) {
 		endpoint := strings.Split(path, "/")
 
 		switch endpoint[1] {
-		case "echo":
+		case "echo": // case "echo" -> Server should respond with enpoint content. (eg. echo/hello -> "hello")
 			content := "HTTP/1.1 200 OK" +
 				"\r\n" +
 				"Content-Type: text/plain\r\n" +
@@ -80,7 +78,7 @@ func handleConnection(conn net.Conn) {
 
 			conn.Write([]byte(content))
 
-		case "user-agent":
+		case "user-agent": // case "user-agent" -> Server should respond with user agent infos as the response body
 			userAgent := splitLine[4]
 
 			fmt.Println(lines)
@@ -94,15 +92,21 @@ func handleConnection(conn net.Conn) {
 
 			conn.Write([]byte(content))
 
-		case "files":
+		case "files": // case "files" -> Server should handle files in regard to the specified method (GET or POST)
 
+			// Base dir path where codecrafetrs's tester expects files to be
 			dirPath := "/tmp/data/codecrafters.io/http-server-tester/"
+
+			// File path composed of dir path specified above and path specified by request
 			filePath := dirPath + endpoint[2]
 
+			// Get file info (if any)
 			fileInfo, err := os.Stat(filePath)
 			if err != nil {
+				// If there's an "error" (file does not exist) check request's method
 
 				if method == "POST" {
+					// "POST" method: the server will try to create the file with specified content in it
 
 					// Create the directory structure if it doesn't exist
 					if err := os.MkdirAll(dirPath, 0755); err != nil {
@@ -134,9 +138,11 @@ func handleConnection(conn net.Conn) {
 				}
 
 			} else {
+				// "GET" method: the server will try to read specified file's content
 
 				fileSize := fileInfo.Size()
 
+				// Read file's content and store it to use in response body
 				fileContent, err := os.ReadFile(filePath)
 				if err != nil {
 					fmt.Println(err)
